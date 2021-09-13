@@ -1,0 +1,30 @@
+\begin{forest}
+  for tree = {circle, fill=black, text=white, node options={minimum width = 3ex}}
+  [,fill=red
+    [,fill=red,draw
+      [1][1][,fill=white][1]
+    ]
+    [,fill=red
+      [,fill=red,draw
+        [,fill=white][1][,fill=white][,fill=white]
+      ]
+      [,fill=red,draw
+        [,fill=white][2][2][,fill=white]
+      ]
+      [,fill=red,draw]
+      [,fill=red,draw
+        [,fill=white][,fill=gray
+          [,fill=white][2][,fill=white][2]
+        ][,fill=white][,fill=white]
+      ]
+    ]
+    [,fill=red,draw]
+    [,fill=red,draw
+      [,fill=white][3]
+      [,fill=gray
+        [3][,fill=white][3][3]
+      ]
+      [,fill=white]
+    ]
+  ]
+\end{forest}
