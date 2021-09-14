@@ -36,3 +36,6 @@
 
 # exetutables
 bin/
+
+# standard output file
+output.tex

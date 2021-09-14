@@ -15,6 +15,6 @@ Box::Box(double lowerBound, double upperBound){
 
 void Box::getCenter(double *center){
     for(int d=0; d<DIM; ++d){
-        center[d] = .5 * (upper[d] - lower[d]);
+        center[d] = .5 * (upper[d] + lower[d]);
     }
 }

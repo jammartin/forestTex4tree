@@ -4,9 +4,15 @@
 
 #include "../include/TreeNode.h"
 
-TreeNode::TreeNode(){};
+TreeNode::TreeNode(){
+    for (int i=0; i<POWDIM; ++i){
+        son[i] = NULL; // explicitly setting sons to NULL when creating new TreeNode
+    }
+};
 
-TreeNode::TreeNode(Box &box) : box { box }{};
+TreeNode::TreeNode(Box &_box) : TreeNode(){
+    box = _box;
+};
 
 void TreeNode::insertSonByNum(int sonNum){
     double center[DIM];

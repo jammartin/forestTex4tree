@@ -47,6 +47,8 @@ void ForestParser::buildTree(TreeNode &root){
         nodeStack[0] = &root;
         nodes2tree(treeStr, 0, nodeStack, sonNumStack);
 
+        std::cout << "Done parsing tree." << std::endl;
+
     } else {
         std::cerr << "Unrecognized input. Expecting forest input. Exiting." << std::endl;
         exit(1);
@@ -81,18 +83,16 @@ void ForestParser::nodes2tree(const std::string &nodeStr, int lvl, TreeNode *nod
             sonNumStack[lvl]++; // increase son number for this level
             nextStr = leafMatch[2].str();
         }
-
-        /** DEBUG **/
-        std::cout << "Label = " << nodeStack[lvl]->label << std::endl;
-        std::cout << nextStr << std::endl;
-        /** DEBUG END **/
-
+        // recursive function call
         nodes2tree(nextStr, lvl, nodeStack, sonNumStack);
+
     } else if (endNodeMatch.size() == 2){
         sonNumStack[lvl] = 0; // reset son numbers
         --lvl; // decrease level
         nextStr = endNodeMatch[1].str();
+        // recursive function call
         nodes2tree(nextStr, lvl, nodeStack, sonNumStack);
+
     } else if (lvl == 0){
         return; // arrived at root
     }

@@ -18,7 +18,7 @@ public:
     };
 
     TreeNode();
-    TreeNode(Box &box);
+    TreeNode(Box &_box);
 
     Particle p;
     Box box;
