@@ -39,3 +39,8 @@ bin/
 
 # standard output file
 output.tex
+boxes.tex
+tree.tex
+
+# H5 files
+*.h5

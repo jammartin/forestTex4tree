@@ -27,7 +27,7 @@ MAIN := main
 # setting general flags
 CXXFLAGS := -std=c++11 -I$(INCLDIR)
 # setting linker flags
-LDFLAGS :=
+LDFLAGS := -lhdf5
 
 # get kernel name to be able to run sed correctly on Darwin (MacOS) or Linux kernels
 KERNEL := $(shell uname -s)
