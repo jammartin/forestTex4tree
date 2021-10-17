@@ -6,6 +6,7 @@
 #define FORESTTEX4TREE_BOX_H
 
 #include "Constants.h"
+#include "Particle.h"
 
 class Box {
 public:
@@ -16,6 +17,7 @@ public:
     Box(double lowerBound, double upperBound);
 
     void getCenter(double *center);
+    int getSonBox(Box &sonBox, Particle &p);
 };
 
 

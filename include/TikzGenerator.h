@@ -19,8 +19,9 @@ public:
     TikzGenerator(const std::string &file);
     ~TikzGenerator();
 
+    void createBoxes(TreeNode *t, bool randomizeParticlePosition=false);
     void treeBoxes2tikz(TreeNode *t);
-    void drawParticles(TreeNode *t);
+    void drawParticles(TreeNode *t, bool randomizeParticlePosition=false);
 
 private:
     std::ofstream ofs;

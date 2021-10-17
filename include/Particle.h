@@ -8,6 +8,8 @@
 
 class Particle {
 public:
+    Particle();
+    Particle(double x, double y);
     double x;
     double y;
     double z;

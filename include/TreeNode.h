@@ -20,6 +20,8 @@ public:
     TreeNode();
     TreeNode(Box &_box);
 
+    bool isLeaf();
+
     Particle p;
     Box box;
     TreeNode *son[POWDIM];
@@ -28,6 +30,7 @@ public:
     // only for plotting
     std::string label;
 
+    void insertParticle(Particle &p, const std::string &label=std::string{""});
     void insertSonByNum(int sonNum);
 };
 

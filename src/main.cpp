@@ -11,6 +11,7 @@
 #include "../include/Box.h"
 #include "../include/ForestParser.h"
 #include "../include/TikzGenerator.h"
+#include "../include/Particles2Forest.h"
 
 int main(int argc, char *argv[]){
 
@@ -20,7 +21,8 @@ int main(int argc, char *argv[]){
 
     options.add_options()
             ("f,file", "Path to input file", cxxopts::value<std::string>())
-            ("o,output", "Path to output file", cxxopts::value<std::string>()->default_value("output.tex"))
+            ("t,tree", "Path to output file for tree plot", cxxopts::value<std::string>()->default_value("tree.tex"))
+            ("b,box", "Path to output file for box plot", cxxopts::value<std::string>()->default_value("boxes.tex"))
             ("h,help", "Show this help");
 
     // read and store options provided
@@ -32,15 +34,37 @@ int main(int argc, char *argv[]){
         exit(0);
     } else if (opts.count("file")) {
 
+        std::string file = opts["file"].as<std::string>();
+
         Box domain { 0., DOMAINSIZE };
         TreeNode root {domain }; // create empty root node
-        ForestParser parser { opts["file"].as<std::string>() };
-        parser.buildTree(root);
 
-        TikzGenerator tikzGenerator { opts["output"].as<std::string>() };
+        if (file.find(std::string{ ".h5" }) != std::string::npos) {
+            Particles2Forest particles2Forest{file};
 
-        tikzGenerator.treeBoxes2tikz(&root);
-        tikzGenerator.drawParticles(&root);
+            particles2Forest.buildTree(root);
+            particles2Forest.createForest(root, opts["tree"].as<std::string>());
+
+            particles2Forest.extendTree(&root);
+
+            TikzGenerator tikzGenerator{opts["box"].as<std::string>()};
+
+            tikzGenerator.createBoxes(&root, false);
+
+        }
+        else if (file.find(std::string{ ".tex" }) != std::string::npos) {
+            ForestParser parser{file};
+
+            parser.buildTree(root);
+
+            TikzGenerator tikzGenerator{opts["box"].as<std::string>()};
+
+            tikzGenerator.createBoxes(&root, true);
+        }
+        else {
+            std::cerr << "Provided file neither *.h5 nor *.tex." << std::endl;
+            exit(1);
+        }
 
     } else {
         std::cerr << "No file provided. Run with -h on usage. Exiting." << std::endl;

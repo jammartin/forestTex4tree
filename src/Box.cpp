@@ -18,3 +18,31 @@ void Box::getCenter(double *center){
         center[d] = .5 * (upper[d] + lower[d]);
     }
 }
+
+int Box::getSonBox(Box &sonBox, Particle &p) {
+    int sonIndex_ = 0;
+
+    int d = 0;
+    if (p.x < 0.5 * (upper[d] + lower[d])) {
+        sonBox.lower[d] = lower[d];
+        sonBox.upper[d] = 0.5 * (lower[d] + upper[d]);
+    }
+    else {
+        sonIndex_ += 1;
+        sonBox.lower[d] = 0.5 * (lower[d] + upper[d]);
+        sonBox.upper[d] = upper[d];
+    }
+
+    d = 1;
+    if (p.y < 0.5 * (upper[d] + lower[d])) {
+        sonBox.lower[d] = lower[d];
+        sonBox.upper[d] = 0.5 * (lower[d] + upper[d]);
+    }
+    else {
+        sonIndex_ += 2;
+        sonBox.lower[d] = 0.5 * (lower[d] + upper[d]);
+        sonBox.upper[d] = upper[d];
+    }
+
+    return sonIndex_;
+}
