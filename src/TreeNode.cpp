@@ -5,8 +5,8 @@
 #include "../include/TreeNode.h"
 
 TreeNode::TreeNode() {
-    for (int i=0; i<POWDIM; ++i){
-        son[i] = NULL; // explicitly setting sons to NULL when creating new TreeNode
+    for (int i=0; i<global::powdim; ++i){
+        son[i] = nullptr; // explicitly setting sons to nullptr when creating new TreeNode
     }
 };
 
@@ -15,7 +15,7 @@ TreeNode::TreeNode(Box &_box) : TreeNode(){
 };
 
 bool TreeNode::isLeaf() {
-    for (int i=0; i<POWDIM; i++) {
+    for (int i=0; i<global::powdim; i++) {
         if (son[i] != nullptr) {
             return false;
         }
@@ -51,14 +51,14 @@ void TreeNode::insertParticle(Particle &p, const std::string &label) {
 }
 
 void TreeNode::insertSonByNum(int sonNum){
-    double center[DIM];
+    double center[global::dim];
     box.getCenter(center);
 
     son[sonNum] = new TreeNode(); // creating son node
     Box *sonBox = &son[sonNum]->box; // creating reference to son box
 
     // setting box
-    for (int d=0; d<DIM; ++d){
+    for (int d=0; d<global::dim; ++d){
         if (sonNum % 2){
             sonBox->lower[d] = .5 * (box.upper[d] + box.lower[d]);
             sonBox->upper[d] = box.upper[d];

@@ -23,6 +23,8 @@ int main(int argc, char *argv[]){
             ("f,file", "Path to input file", cxxopts::value<std::string>())
             ("t,tree", "Path to output file for tree plot", cxxopts::value<std::string>()->default_value("tree.tex"))
             ("b,box", "Path to output file for box plot", cxxopts::value<std::string>()->default_value("boxes.tex"))
+            ("s,space-filling-curve", "Draw space filling curve to box plot instead of particles")
+            ("H,hilbert", "Use Hilbert keys instead of Lebesgue keys for space filling curve plot")
             ("h,help", "Show this help");
 
     // read and store options provided
@@ -35,8 +37,9 @@ int main(int argc, char *argv[]){
     } else if (opts.count("file")) {
 
         std::string file = opts["file"].as<std::string>();
+        bool hilbert = opts.count("hilbert") ? true : false;
 
-        Box domain { 0., DOMAINSIZE };
+        Box domain { 0., global::domainSize };
         TreeNode root {domain }; // create empty root node
 
         if (file.find(std::string{ ".h5" }) != std::string::npos) {
@@ -49,7 +52,11 @@ int main(int argc, char *argv[]){
 
             TikzGenerator tikzGenerator{opts["box"].as<std::string>()};
 
-            tikzGenerator.createBoxes(&root, false);
+            if (opts.count("space-filling-curve")){
+                tikzGenerator.createSFC(&root, hilbert);
+            } else {
+                tikzGenerator.createBoxes(&root, false);
+            }
 
         }
         else if (file.find(std::string{ ".tex" }) != std::string::npos) {
@@ -59,7 +66,11 @@ int main(int argc, char *argv[]){
 
             TikzGenerator tikzGenerator{opts["box"].as<std::string>()};
 
-            tikzGenerator.createBoxes(&root, true);
+            if (opts.count("space-filling-curve")){
+                tikzGenerator.createSFC(&root, hilbert);
+            } else {
+                tikzGenerator.createBoxes(&root, true);
+            }
         }
         else {
             std::cerr << "Provided file neither *.h5 nor *.tex." << std::endl;

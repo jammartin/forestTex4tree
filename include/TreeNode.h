@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "Constants.h"
+#include "global.h"
 #include "Particle.h"
 #include "Box.h"
 
@@ -24,7 +24,7 @@ public:
 
     Particle p;
     Box box;
-    TreeNode *son[POWDIM];
+    TreeNode *son[global::powdim];
     nodeType node;
 
     // only for plotting

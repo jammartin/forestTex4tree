@@ -34,7 +34,7 @@ void Particles2Forest::buildTree(TreeNode &root) {
 
     root.p = particles[0];
     root.label = std::to_string(0);
-    for (int i=1; i<particles.size(); i++) {
+    for (int i=1; i<particles.size(); ++i) {
         root.insertParticle(particles[i], std::to_string(i));
     }
 }
@@ -42,7 +42,7 @@ void Particles2Forest::buildTree(TreeNode &root) {
 void Particles2Forest::extendTree(TreeNode *t) {
     if (t != NULL) {
         if (!t->isLeaf()) {
-            for (int i=0; i<POWDIM; i++) {
+            for (int i=0; i<global::powdim; ++i) {
                 if (t->son[i] == nullptr) {
                     t->insertSonByNum(i);
                 }
@@ -57,6 +57,7 @@ void Particles2Forest::extendTree(TreeNode *t) {
 void Particles2Forest::createForest(TreeNode &root, const std::string &outputFile) {
 
     std::stringstream forest;
+    forest << global::fileHeader;
     forest << "\\begin{forest}\n";
     forest << "for tree = {circle, fill=black, text=white, node options={minimum width = 3ex}, font=\\footnotesize}\n";
 
@@ -78,7 +79,7 @@ void Particles2Forest::traverseForest(TreeNode &t, std::stringstream &ss) {
 
     if (t.node == TreeNode::nodeType::pseudoParticle) {
         ss << "[,fill=gray\n";
-        for (int i=0; i<POWDIM; i++) {
+        for (int i=0; i<global::powdim; i++) {
             if (t.son[i] != nullptr) {
                 traverseForest(*t.son[i], ss);
             }
@@ -93,5 +94,6 @@ void Particles2Forest::traverseForest(TreeNode &t, std::stringstream &ss) {
     }
     else {
         // not possible (for now)
+        throw std::runtime_error("nodeType::commonCoarseNode not implemented yet. Should be avoided!");
     }
 }

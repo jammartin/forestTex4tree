@@ -39,11 +39,11 @@ void ForestParser::buildTree(TreeNode &root){
 
         std::cout << "Tree to be parsed: " << treeStr << std::endl;
 
-        int sonNumStack[MAXLEVEL];
-        for (int lvl=0; lvl<MAXLEVEL; ++lvl){
+        int sonNumStack[global::maxTreeLvl];
+        for (int lvl=0; lvl<global::maxTreeLvl; ++lvl){
             sonNumStack[lvl] = 0; // start with son number zero on all levels
         }
-        TreeNode *nodeStack[MAXLEVEL];
+        TreeNode *nodeStack[global::maxTreeLvl];
         nodeStack[0] = &root;
         nodes2tree(treeStr, 0, nodeStack, sonNumStack);
 

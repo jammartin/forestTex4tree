@@ -10,7 +10,7 @@
 #include <fstream>
 #include <regex>
 
-#include "Constants.h"
+#include "global.h"
 #include "TreeNode.h"
 
 class ForestParser {

@@ -5,13 +5,13 @@
 #ifndef FORESTTEX4TREE_BOX_H
 #define FORESTTEX4TREE_BOX_H
 
-#include "Constants.h"
+#include "global.h"
 #include "Particle.h"
 
 class Box {
 public:
-    double lower[DIM];
-    double upper[DIM];
+    double lower[global::dim];
+    double upper[global::dim];
 
     Box();
     Box(double lowerBound, double upperBound);
