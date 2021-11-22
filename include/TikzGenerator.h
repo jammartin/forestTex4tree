@@ -25,7 +25,7 @@ public:
 
     void setNumProcesses(int numProcesses);
     void createBoxes(TreeNode *t, bool randomizeParticlePosition=false);
-    void createSFC(TreeNode *t, bool hilbert=false, bool colorize=true);
+    void createSFC(TreeNode *t, bool hilbert=false, bool colorize=true, bool addParticlesCentered=false);
 
 private:
     std::ofstream ofs;
@@ -39,7 +39,7 @@ private:
     void treeBoxes2tikz(TreeNode *t);
     void colorDefinitions();
     void treeBoxes2tikzColored(TreeNode *t, keytype k, int lvl);
-    void drawParticles(TreeNode *t, bool randomizeParticlePosition=false);
+    void drawParticles(TreeNode *t, bool randomizeParticlePosition=false, bool center=false);
     void getParticleKeys(TreeNode *t, keytype k, int lvl, std::vector<keytype> &particleKeys);
     void getSFC(std::map<keytype, double*> &posByKey, TreeNode *t, keytype k, int lvl);
     void determineRanges(TreeNode *t, bool hilbert);

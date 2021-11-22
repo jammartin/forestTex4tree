@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
             ("s,space-filling-curve", "Draw space filling curve to box plot instead of particles")
             ("n,num-processes", "Number of processes, needed to colorize domains", cxxopts::value<int>()->default_value("2"))
             ("c,colorize", "Colorize domains, load balanced in dependence of number of processes")
+            ("p,draw-particles", "Draw particles in addition to space-filling-curve (particle position(s) centered!)")
             ("H,hilbert", "Use Hilbert keys instead of Lebesgue keys for space filling curve plot")
             ("h,help", "Show this help");
 
@@ -41,6 +42,7 @@ int main(int argc, char *argv[]){
         std::string file = opts["file"].as<std::string>();
         bool hilbert = opts.count("hilbert") ? true : false;
         bool colorize = opts.count("colorize") ? true : false;
+        bool addParticlesCentered = opts.count("draw-particles") ? true : false;
         int numProcesses = opts["num-processes"].as<int>();
 
         Box domain { 0., global::domainSize };
@@ -60,7 +62,7 @@ int main(int argc, char *argv[]){
                 if (colorize) {
                     tikzGenerator.setNumProcesses(numProcesses);
                 }
-                tikzGenerator.createSFC(&root, hilbert, colorize);
+                tikzGenerator.createSFC(&root, hilbert, colorize, addParticlesCentered);
             } else {
                 tikzGenerator.createBoxes(&root, false);
             }
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]){
                 if (colorize) {
                     tikzGenerator.setNumProcesses(numProcesses);
                 }
-                tikzGenerator.createSFC(&root, hilbert, colorize);
+                tikzGenerator.createSFC(&root, hilbert, colorize, addParticlesCentered);
             } else {
                 tikzGenerator.createBoxes(&root, true);
             }

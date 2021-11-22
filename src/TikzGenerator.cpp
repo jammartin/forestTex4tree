@@ -73,7 +73,7 @@ void TikzGenerator::treeBoxes2tikzColored(TreeNode *t, keytype k, int lvl) {
 }
 
 // only works with integers as labels
-void TikzGenerator::drawParticles(TreeNode *t, bool randomizeParticlePosition){
+void TikzGenerator::drawParticles(TreeNode *t, bool randomizeParticlePosition, bool center){
     if (t != nullptr) {
         std::smatch particleMatch;
         std::regex_match(t->label, particleMatch, std::regex(particlePattern));
@@ -108,6 +108,9 @@ void TikzGenerator::drawParticles(TreeNode *t, bool randomizeParticlePosition){
                     t->box.getCenter(pos);
                 }
             }
+            else if (center) {
+                t->box.getCenter(pos);
+            }
             else {
                 if (t->box.upper[0] - t->p.x < margin) {
                     pos[0] = t->box.upper[0] - margin;
@@ -136,7 +139,7 @@ void TikzGenerator::drawParticles(TreeNode *t, bool randomizeParticlePosition){
         }
 
         for (int i=0; i<global::powdim; ++i){
-            drawParticles(t->son[i]);
+            drawParticles(t->son[i], randomizeParticlePosition, center);
         }
     }
 }
@@ -176,7 +179,7 @@ void TikzGenerator::determineRanges(TreeNode *t, bool hilbert){
 
 }
 
-void TikzGenerator::createSFC(TreeNode *t, bool hilbert, bool colorize){
+void TikzGenerator::createSFC(TreeNode *t, bool hilbert, bool colorize, bool addParticlesCentered){
 
     if (hilbert) getKey = &Lebesgue2Hilbert;
 
@@ -205,6 +208,10 @@ void TikzGenerator::createSFC(TreeNode *t, bool hilbert, bool colorize){
         } else {
             break;
         }
+    }
+
+    if (addParticlesCentered) {
+        drawParticles(t, false, true);
     }
 
     std::cout << "Finished space-filling curve plot!" << std::endl;
