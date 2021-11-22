@@ -35,6 +35,7 @@ void TreeNode::insertParticle(Particle &p, const std::string &label) {
             son[i]->p = p;
             son[i]->box = sonBox;
             son[i]->label = this->label;
+            son[i]->node = nodeType::particle;
             this->label = std::string{""};
             insertParticle(pBuffer, label);
         }

@@ -94,6 +94,7 @@ void Particles2Forest::traverseForest(TreeNode &t, std::stringstream &ss) {
     }
     else {
         // not possible (for now)
+        std::cout << "t.node = " << t.node << std::endl;
         throw std::runtime_error("nodeType::commonCoarseNode not implemented yet. Should be avoided!");
     }
 }
