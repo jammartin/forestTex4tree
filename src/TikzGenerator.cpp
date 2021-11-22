@@ -15,12 +15,19 @@ TikzGenerator::TikzGenerator(const std::string &file){
         std::cerr << "Unable to open output file. Exiting." << std::endl;
         exit(1);
     }
+    ranges = new keytype[numProcesses + 1];
 }
 
 TikzGenerator::~TikzGenerator(){
     // write end of tikzpicture to file
     ofs << "\\end{tikzpicture}\n";
     ofs.close();
+
+    delete ranges;
+}
+
+void TikzGenerator::setNumProcesses(int numProcesses) {
+    this->numProcesses = numProcesses;
 }
 
 void TikzGenerator::createBoxes(TreeNode *t, bool randomizeParticlePosition) {
@@ -37,6 +44,30 @@ void TikzGenerator::treeBoxes2tikz(TreeNode *t){
             << t->box.upper[0] << ", " << t->box.upper[1] << ");\n";
         for (int i=0; i<global::powdim; ++i){
             treeBoxes2tikz(t->son[i]);
+        }
+    }
+}
+
+void TikzGenerator::colorDefinitions() {
+    for (int i=0; i<numProcesses; ++i) {
+        ofs << "    \\def\\color" << static_cast<char>('a' + i) << "{" << global::colors[i] << "}\n";
+    }
+}
+
+// works only for DIM = 2
+void TikzGenerator::treeBoxes2tikzColored(TreeNode *t, keytype k, int lvl) {
+    if (t != nullptr){
+        int proc = -1;
+        for (int j=0; j<numProcesses; ++j){
+            if (getKey(k, lvl) >= ranges[j] && getKey(k, lvl) < ranges[j+1]) proc = j;
+        }
+        if (proc != -1) {
+            ofs << "    \\draw [fill=\\color" << static_cast<char>('a' + proc) << "](" << t->box.lower[0] << ", " << t->box.lower[1]
+                << ") rectangle ("
+                << t->box.upper[0] << ", " << t->box.upper[1] << ");\n";
+        }
+        for (int i=0; i<global::powdim; ++i){
+            treeBoxes2tikzColored(t->son[i], k | ((keytype)i << (global::dim*(global::maxTreeLvl-lvl-1))), lvl+1);
         }
     }
 }
@@ -110,14 +141,59 @@ void TikzGenerator::drawParticles(TreeNode *t, bool randomizeParticlePosition){
     }
 }
 
-void TikzGenerator::createSFC(TreeNode *t, bool hilbert){
-    treeBoxes2tikz(t);
+// only works with integers as labels
+void TikzGenerator::getParticleKeys(TreeNode *t, keytype k, int lvl, std::vector<keytype> &particleKeys) {
 
-    std::map<keytype, double*> posByKey {};
+    if (t != nullptr){
+        for (int i=0; i<global::powdim; ++i){
+            getParticleKeys(t->son[i], k | ((keytype)i << (global::dim*(global::maxTreeLvl-lvl-1))), lvl+1, particleKeys);
+        }
+        std::smatch particleMatch;
+        std::regex_match(t->label, particleMatch, std::regex(particlePattern));
+        if (particleMatch.size() == 2){
+            particleKeys.push_back(getKey(k, lvl));
+        }
+    }
+
+}
+
+void TikzGenerator::determineRanges(TreeNode *t, bool hilbert){
+
+    if (hilbert) getKey = &Lebesgue2Hilbert;
+    std::vector<keytype> realParticleKeys;
+    getParticleKeys(t, 0UL, 0, realParticleKeys);
+    std::sort(realParticleKeys.begin(), realParticleKeys.end());
+    int numParticles = realParticleKeys.size();
+    int targetNumParticles = numParticles/numProcesses;
+    ranges[0] = 0;
+    for (int i=1; i<=numProcesses; i++) {
+        ranges[i] = realParticleKeys[i * targetNumParticles];
+    }
+    ranges[numProcesses] = ~((keytype)0);
+    //for (int i=0; i<=numProcesses; i++) {
+    //    std::cout << "ranges[" << i << "] = " << ranges[i] << std::endl;
+    //}
+
+}
+
+void TikzGenerator::createSFC(TreeNode *t, bool hilbert, bool colorize){
 
     if (hilbert) getKey = &Lebesgue2Hilbert;
 
+    if (colorize) {
+        determineRanges(t, hilbert);
+        colorDefinitions();
+        treeBoxes2tikzColored(t, 0UL, 0);
+    }
+    else {
+        treeBoxes2tikz(t);
+    }
+
+    std::map<keytype, double*> posByKey {};
+
     getSFC(posByKey, t, 0UL, 0);
+
+    std::vector<Particle> particles;
 
     std::map<keytype, double*>::iterator posIt = posByKey.begin();
     while(true) {

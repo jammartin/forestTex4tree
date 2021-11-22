@@ -23,18 +23,26 @@ public:
     TikzGenerator(const std::string &file);
     ~TikzGenerator();
 
+    void setNumProcesses(int numProcesses);
     void createBoxes(TreeNode *t, bool randomizeParticlePosition=false);
-    void createSFC(TreeNode *t, bool hilbert=false);
+    void createSFC(TreeNode *t, bool hilbert=false, bool colorize=true);
 
 private:
     std::ofstream ofs;
     const std::string particlePattern { R"RAW(([0-9]+),?.*)RAW" };
 
+    int numProcesses = 8;
+    keytype *ranges;
+
     static constexpr double margin { global::domainSize/25. };
 
     void treeBoxes2tikz(TreeNode *t);
+    void colorDefinitions();
+    void treeBoxes2tikzColored(TreeNode *t, keytype k, int lvl);
     void drawParticles(TreeNode *t, bool randomizeParticlePosition=false);
+    void getParticleKeys(TreeNode *t, keytype k, int lvl, std::vector<keytype> &particleKeys);
     void getSFC(std::map<keytype, double*> &posByKey, TreeNode *t, keytype k, int lvl);
+    void determineRanges(TreeNode *t, bool hilbert);
 
     static keytype Lebesgue(keytype k_, int _){ return k_; }
     static keytype Lebesgue2Hilbert(keytype lebesgue, int level);

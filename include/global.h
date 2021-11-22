@@ -5,6 +5,8 @@
 #ifndef FORESTTEX4TREE_GLOBAL_H
 #define FORESTTEX4TREE_GLOBAL_H
 
+#include <string>
+#include <algorithm>
 
 namespace global {
     constexpr int dim { 2 };
@@ -20,6 +22,8 @@ namespace global {
             { {1,2,0,0}, {0,1,3,1}, {2,0,2,3}, {3,3,1,2} };
     const unsigned char HilbertTable[4][4] =
             { {0,3,1,2}, {0,1,3,2}, {2,3,1,0}, {2,1,3,0} };
+
+    const std::string colors[] = { "Blue", "Red", "Orange", "OliveGreen", "Mulberry", "Apricot", "Violet", "LimeGreen" };
 }
 
 #endif //FORESTTEX4TREE_GLOBAL_H

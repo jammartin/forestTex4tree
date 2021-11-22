@@ -24,6 +24,8 @@ int main(int argc, char *argv[]){
             ("t,tree", "Path to output file for tree plot", cxxopts::value<std::string>()->default_value("tree.tex"))
             ("b,box", "Path to output file for box plot", cxxopts::value<std::string>()->default_value("boxes.tex"))
             ("s,space-filling-curve", "Draw space filling curve to box plot instead of particles")
+            ("n,num-processes", "Number of processes, needed to colorize domains", cxxopts::value<int>()->default_value("2"))
+            ("c,colorize", "Colorize domains, load balanced in dependence of number of processes")
             ("H,hilbert", "Use Hilbert keys instead of Lebesgue keys for space filling curve plot")
             ("h,help", "Show this help");
 
@@ -38,6 +40,8 @@ int main(int argc, char *argv[]){
 
         std::string file = opts["file"].as<std::string>();
         bool hilbert = opts.count("hilbert") ? true : false;
+        bool colorize = opts.count("colorize") ? true : false;
+        int numProcesses = opts["num-processes"].as<int>();
 
         Box domain { 0., global::domainSize };
         TreeNode root {domain }; // create empty root node
@@ -53,7 +57,10 @@ int main(int argc, char *argv[]){
             TikzGenerator tikzGenerator{opts["box"].as<std::string>()};
 
             if (opts.count("space-filling-curve")){
-                tikzGenerator.createSFC(&root, hilbert);
+                if (colorize) {
+                    tikzGenerator.setNumProcesses(numProcesses);
+                }
+                tikzGenerator.createSFC(&root, hilbert, colorize);
             } else {
                 tikzGenerator.createBoxes(&root, false);
             }
@@ -67,7 +74,10 @@ int main(int argc, char *argv[]){
             TikzGenerator tikzGenerator{opts["box"].as<std::string>()};
 
             if (opts.count("space-filling-curve")){
-                tikzGenerator.createSFC(&root, hilbert);
+                if (colorize) {
+                    tikzGenerator.setNumProcesses(numProcesses);
+                }
+                tikzGenerator.createSFC(&root, hilbert, colorize);
             } else {
                 tikzGenerator.createBoxes(&root, true);
             }
