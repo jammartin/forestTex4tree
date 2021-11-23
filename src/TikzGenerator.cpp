@@ -145,16 +145,20 @@ void TikzGenerator::drawParticles(TreeNode *t, bool randomizeParticlePosition, b
 }
 
 // only works with integers as labels
-void TikzGenerator::getParticleKeys(TreeNode *t, keytype k, int lvl, std::vector<keytype> &particleKeys) {
+void TikzGenerator::getParticleKeys(TreeNode *t, keytype k, int lvl, std::vector<keytype> &particleKeys,
+                                    std::vector<std::string> &particleLabels) {
 
     if (t != nullptr){
         for (int i=0; i<global::powdim; ++i){
-            getParticleKeys(t->son[i], k | ((keytype)i << (global::dim*(global::maxTreeLvl-lvl-1))), lvl+1, particleKeys);
+            getParticleKeys(t->son[i], k | ((keytype)i << (global::dim*(global::maxTreeLvl-lvl-1))), lvl+1,
+                            particleKeys, particleLabels);
         }
         std::smatch particleMatch;
         std::regex_match(t->label, particleMatch, std::regex(particlePattern));
         if (particleMatch.size() == 2){
+            std::cout << "Label: " << t->label << std::endl;
             particleKeys.push_back(getKey(k, lvl));
+            particleLabels.push_back(t->label);
         }
     }
 
@@ -164,8 +168,13 @@ void TikzGenerator::determineRanges(TreeNode *t, bool hilbert){
 
     if (hilbert) getKey = &Lebesgue2Hilbert;
     std::vector<keytype> realParticleKeys;
-    getParticleKeys(t, 0UL, 0, realParticleKeys);
-    std::sort(realParticleKeys.begin(), realParticleKeys.end());
+    std::vector<std::string> realParticleLabels;
+    getParticleKeys(t, 0UL, 0, realParticleKeys, realParticleLabels);
+    std::vector<std::pair<keytype, std::string>> zipped;
+    Utils::zip(realParticleKeys, realParticleLabels, zipped);
+    //std::sort(realParticleKeys.begin(), realParticleKeys.end());
+    std::sort(zipped.begin(), zipped.end());
+    Utils::unzip(zipped, realParticleKeys, realParticleLabels);
     int numParticles = realParticleKeys.size();
     int targetNumParticles = numParticles/numProcesses;
     ranges[0] = 0;
@@ -173,6 +182,74 @@ void TikzGenerator::determineRanges(TreeNode *t, bool hilbert){
         ranges[i] = realParticleKeys[i * targetNumParticles];
     }
     ranges[numProcesses] = ~((keytype)0);
+    std::ofstream ofsRanges;
+    ofsRanges = std::ofstream("range.tex");
+    if(ofs.good()){
+        ofsRanges << "\\begin{tikzpicture}\n";
+        ofsRanges << "  \\def\\ptsize{4.0pt}\n";
+        ofsRanges << "  \\draw [very thick](0,0) -- (10,0);\n";
+        for (int i=1; i<numProcesses; ++i) {
+            std::cout << "range[" << i << "] = " << ranges[i] << std::endl;
+            ofsRanges << "  \\def\\vert" << static_cast<char>('a' + i) << "{" << 10/(double)(1UL<<16) * (double)ranges[i]<< "}\n";
+        }
+        for (int i=1; i<numProcesses; ++i) {
+            ofsRanges << "  \\draw [very thick](\\vert" << static_cast<char>('a' + i) << ",0.25) -- (\\vert" << static_cast<char>('a' + i) << ",-0.75);\n";
+        }
+        double previousParticlePosition = -10.0;
+        double particlePosition;
+        for (int i=0; i<realParticleKeys.size(); ++i) {
+            particlePosition = 10./(double)(1UL<<16) * (double)realParticleKeys[i];
+            if (particlePosition - previousParticlePosition < 0.25) {
+                particlePosition = previousParticlePosition + 0.25;
+            }
+            ofsRanges << "  \\coordinate (" << static_cast<char>('A' + i) << ") at (" << particlePosition
+                        << ", 0) ;\n";
+            ofsRanges << "  \\node at (" << particlePosition << ", 0.5) {" << realParticleLabels[i] << "};\n";
+            previousParticlePosition = particlePosition;
+        }
+        ofsRanges << "  \\foreach \\p in {";
+        int proc;
+        int temp = 0;
+        for (int i=0; i<realParticleKeys.size() - 1; ++i) {
+            proc = i/targetNumParticles;
+            if (temp == proc) {
+                ofsRanges << static_cast<char>('A' + i);// << ", ";
+                if ((i+1)/targetNumParticles == proc) {
+                    ofsRanges << ", ";
+                }
+            }
+            else {
+                ofsRanges << "}\n";
+                ofsRanges << "      \\fill[fill=" << global::colors[temp] << ",draw=black,thick] (\\p) circle (\\ptsize);\n";
+                ofsRanges << "  \\foreach \\p in {";
+                ofsRanges << static_cast<char>('A' + i) << ", ";
+
+            }
+            temp = proc;
+        }
+        ofsRanges << ", " << static_cast<char>('A' + realParticleKeys.size() - 1) << "}\n";
+        ofsRanges << "      \\fill[fill=" << global::colors[temp] << ",draw=black,thick] (\\p) circle (\\ptsize);\n";
+
+        ofsRanges << "  \\draw [->, very thick] (\\vert"
+                    << static_cast<char>('a' + 1) << "/2, -1.2) -- node[below, yshift=-0.5cm]{process "
+                    << 0 << "} (\\vert" << static_cast<char>('a' + 1) << "/2, -0.4);\n";
+        for (int i=1; i<numProcesses-1; ++i) {
+            ofsRanges << "  \\draw [->, very thick] ({\\vert"
+                << static_cast<char>('a' + i) << "+(\\vert" << static_cast<char>('a' + i + 1) << "-\\vert" << static_cast<char>('a' + i)
+                << ")/2}, -1.2) -- node[below, yshift=-0.5cm]{process " << i << "} ({\\vert"
+                << static_cast<char>('a' + i) << "+(\\vert" << static_cast<char>('a' + i + 1) << " -\\vert"
+                << static_cast<char>('a' + i) << ")/2}, -0.4);\n";
+        }
+        if (numProcesses > 1) {
+            ofsRanges << "  \\draw [->, very thick] ({\\vert"
+                << static_cast<char>('a' + numProcesses-1) << "+(10-\\vert" << static_cast<char>('a' + numProcesses-1)
+                << ")/2}, -1.2) -- node[below, yshift=-0.5cm]{process " << numProcesses-1 << "} ({\\vert"
+                << static_cast<char>('a' + numProcesses-1) << "+(10-\\vert"
+                << static_cast<char>('a' + numProcesses-1) << ")/2}, -0.4);\n";
+        }
+    }
+    ofsRanges << "\\end{tikzpicture}\n";
+    ofsRanges.close();
     //for (int i=0; i<=numProcesses; i++) {
     //    std::cout << "ranges[" << i << "] = " << ranges[i] << std::endl;
     //}
@@ -192,21 +269,20 @@ void TikzGenerator::createSFC(TreeNode *t, bool hilbert, bool colorize, bool add
         treeBoxes2tikz(t);
     }
 
-    std::map<keytype, double*> posByKey {};
-
-    getSFC(posByKey, t, 0UL, 0);
-
-    std::vector<Particle> particles;
-
-    std::map<keytype, double*>::iterator posIt = posByKey.begin();
-    while(true) {
-        double *posStart = posIt->second;
-        ++posIt;
-        if (posIt != posByKey.end()) {
-            ofs << "    \\draw [line width=1.0pt](" << posStart[0] << ", " << posStart[1] << ") -- (";
-            ofs << posIt->second[0] << ", " << posIt->second[1] << ");\n";
-        } else {
-            break;
+    // TODO: flag or different approach?
+    if (true) {
+        std::map<keytype, double*> posByKey {};
+        getSFC(posByKey, t, 0UL, 0);
+        std::map<keytype, double *>::iterator posIt = posByKey.begin();
+        while (true) {
+            double *posStart = posIt->second;
+            ++posIt;
+            if (posIt != posByKey.end()) {
+                ofs << "    \\draw [line width=1.0pt](" << posStart[0] << ", " << posStart[1] << ") -- (";
+                ofs << posIt->second[0] << ", " << posIt->second[1] << ");\n";
+            } else {
+                break;
+            }
         }
     }
 
